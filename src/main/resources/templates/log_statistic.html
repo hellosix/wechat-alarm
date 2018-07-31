@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <link href="../vender/bootstrap-3.3.7-dist/css/bootstrap.min.css" rel="stylesheet" charset="utf-8" />
+    <link href="../vender/datatables/dataTables.bootstrap.css" rel="stylesheet" charset="utf-8" />
+    <link href="../css/common.css" rel="stylesheet" charset="utf-8" />
+    <style>
+        label.control-label{
+            margin-top:5px;
+            padding-left:0px;
+            width:65px
+        }
+
+        canvas{
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+        }
+        .chart-header{
+            height: 30px;
+            color: #0088CC;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Mosquito</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li><a href="/role"> role <span class="sr-only">(current)</span></a></li>
+                <li class="active"><a href="/log_statistic"> log </a></li>
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+<div style="width:10px;height:50px"></div>
+<div class="container-fluid">
+    <div class="row" style="margin-bottom: 10px">
+        <div class="form-group">
+            <div style="width:300px;float:left;margin-left:28px;margin-right:10px;margin-top:15px">
+                <select class="form-control select-service">
+                    <option><a href="#"> select service ...</a></option>
+                    <option th:each="item : ${services}" th:attr="value=${item.service}" th:text="${item.service}">1</option>
+                </select>
+            </div>
+        </div><!-- .form-group -->
+        <div class="form-group" style="padding-top:5px" id="select-time" data-type="minute">
+            <a class="select-time label label-primary" data-type="day">15 day</a>
+            <a class="select-time label label-success" data-type="hour">24 hour</a>
+            <a class="select-time label label-info" data-type="minute">30 minute</a>
+        </div><!-- .form-group -->
+    </div><!-- .row -->
+    <div class="container-fluid">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="row" id="chart-content"></div>
+            </div><!-- .panel-body -->
+        </div><!-- .panel -->
+    </div><!-- .row -->
+    <div class="container-fluid">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <table class="table table-bordered" id="command-table">
+                    <thead>
+                    <tr>
+                        <th>id</th>
+                        <th>metric</th>
+                        <th>metric_value</th>
+                        <th>error_message</th>
+                        <th>error_code</th>
+                        <th>add_time</th>
+                    </tr>
+                    </thead>
+                    <tbody id="log-detail-table">
+                    </tbody>
+                </table>
+            </div><!-- .panel-body -->
+        </div><!-- .panel -->
+    </div><!-- .row -->
+</div><!-- .container-fluid -->
+
+
+
+<script src="../vender/jQuery/jquery-2.2.3.min.js"></script>
+<script src="../vender/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+<script src="../vender/datatables/jquery.dataTables.js"></script>
+<script src="../vender/datatables/dataTables.bootstrap.js"></script>
+<script src="../vender/chart/Chart.bundle.js"></script>
+<script src="../vender/chart/utils.js"></script>
+<script src="../js/common.js"></script>
+<script th:inline="javascript">
+/*<![CDATA[*/
+    $(function () {
+        window.logs = /*[[${logs}]]*/;
+        var role = /*[[${role}]]*/;
+        var service = /*[[${service}]]*/;
+        var timeType = /*[[${timeType}]]*/;
+
+        var role_list = /*[[${role_list}]]*/;
+        window.role_list = role_list;
+        var metrics = /*[[${metrics}]]*/
+
+        if( role == "" && service == "" ){
+            role = role_list[0]['ID'];
+            $("select").find("option[value='"+ role +"']").attr("selected",true);
+        }else{
+            $("select.select-role").find("option[value='"+ role +"']").attr("selected",true);
+            $("select.select-service").find("option[value='"+ service +"']").attr("selected",true);
+            $("#select-time").data("type", timeType);
+        }
+
+        var url = "/log_statistic?";
+        $(".select-role").change(function () {
+            var value = $(this).val();
+            var timeType = $("#select-time").data("type");
+            window.location.href = url + "role=" + value + "&timeType=" + timeType;
+        });
+        $(".select-service").change(function () {
+            var value = $(this).val();
+            var timeType = $("#select-time").data("type");
+            window.location.href = url + "service=" + value + "&timeType=" + timeType;
+        });
+        $("a.select-time").click(function () {
+            var timeType = $(this).data("type");
+            var role = $(".select-role > option[selected='selected']").val();
+            if( typeof(role) == "undefined" ){
+                role = "";
+            }
+            var service = $(".select-service > option[selected='selected']").val();
+            if( typeof(service) == "undefined" ){
+                service = "";
+            }
+            window.location.href = url + "service=" + service + "&role=" + role + "&timeType=" + timeType;
+        });
+
+        window.metricsMap = /*[[${metricsMap}]]*/;
+
+    });
+
+
+/*]]>*/
+</script>
+<script src="../js/log_statistic.js"></script>
+</body>
+</html>

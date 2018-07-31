@@ -1,0 +1,21 @@
+.tab-content{
+    margin-top:5px;
+    border-top:1px dashed #ccc
+}
+
+.checkbox-inline+.checkbox-inline, .radio-inline+.radio-inline {
+    margin-top: 0;
+    margin-left: 0px;
+    margin-right: 5px;
+}
+label.checkbox-inline{
+    margin-right: 5px;
+}
+
+.members-tr{
+    border-top:dashed #ccc 1px;
+}
+
+.pointer{
+    cursor: pointer;
+}

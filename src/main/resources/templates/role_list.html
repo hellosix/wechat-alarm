@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <link href="../vender/bootstrap-3.3.7-dist/css/bootstrap.min.css" rel="stylesheet" charset="utf-8" />
+    <link href="../css/common.css" rel="stylesheet" charset="utf-8" />
+    <style>
+        .restful-detail{
+            color: #0088CC;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Mosquito</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="/role"> role <span class="sr-only">(current)</span></a></li>
+                <li><a href="/log_statistic"> log </a></li>
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+<div style="width:10px;height:70px"></div>
+<div class="container-fluid">
+    <div class="container">
+        <div class="row">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title"><span class="glyphicon glyphicon-plus pull-right add-role"></span> role list </h3>
+                </div>
+                <div class="panel-body">
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>RoleName</th>
+                            <th>Service</th>
+                            <th>Members</th>
+                            <th>AddTime</th>
+                            <th>SendTime</th>
+                            <th>action</th>
+                        </tr>
+                        </thead>
+                        <tbody id="role-table-list">
+
+                        </tbody>
+                    </table>
+                </div><!-- .panel-body -->
+            </div><!-- .panel -->
+        </div><!-- .row -->
+    </div><!-- .container -->
+</div><!-- .container-fluid -->
+
+<!-- Modal -->
+<div class="modal fade" id="add-role-model" tabindex="-1" role="dialog" >
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Add role</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label> 添加 role-name</label>
+                    <input type="text" name="role_name" class="form-control" placeholder="service1预警"></input>
+                </div>
+                <div class="form-group">
+                    <label> 添加 service</label>
+                    <input type="text" name="service" class="form-control" placeholder="service001"></input>
+                    <ul class="typeahead dropdown-menu all-service" role="listbox">
+                        <li class="dropdown-li" th:each="item : ${apps}"><a class="dropdown-item" th:text="${item.service}"></a></li>
+                    </ul>
+                </div>
+                <div class="form-group">
+                    <label> 选择成员 </label>
+                    <table>
+                        <tbody>
+                        <tr th:each="item : ${userLsit}" class="members-tr">
+                            <td th:text="${item.key}" valign="top"></td>
+                            <td>
+                                <label class="checkbox-inline checkbox-members" th:each="user : ${item.value}">
+                                    <input type="checkbox" name="members" th:attr="value=${user.userid},data-target=${item.key}" th:text="${user.userid}"></input>
+                                </label>
+                                <label class="checkbox-inline">
+                                    <input type="checkbox" name="all_members" th:attr="data-target=${item.key}" value="">@all</input>
+                                </label>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="role-submit">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="delete-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <p>role 和对应的 logs 就会被删除&hellip;</p>
+            </div>
+            <div class="modal-footer">
+                <a type="button" class="btn btn-sm btn-default" data-dismiss="modal">Close</a>
+                <a href="#" id="remove-role-confirm" type="button" class="btn btn-sm btn-danger">confirm</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="restful-modal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <h5>restful: http://{ip:port}/mosquito</h5>
+                <pre style="overflow: hidden">
+request body:
+{
+  "clientId": "127.0.0.1",
+  "metric": 1000,
+  "metricValue":"100302",
+  "roleId":<span id="role-id"></span>,
+  "roleName":"hi3",
+  "errorMessage":"hello error"
+}
+                </pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../vender/jQuery/jquery-2.2.3.min.js"></script>
+<script src="../vender/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+<script src="../vender/bootstrap3-typeahead.js"></script>
+<script src="../js/common.js"></script>
+<script src="../js/role_list.js"></script>
+<script th:inline="JavaScript">
+/*<![CDATA[*/
+
+//******************  添加服务器
+var apps = /*[[${apps}]]*/;
+var services = [];
+for( var i in apps ){
+    services.push( apps[i].service)
+}
+
+var allService = '';
+$("input[name='service']").typeahead({
+    source: services
+});
+
+/*]]>*/
+</script>
+</body>
+</html>
